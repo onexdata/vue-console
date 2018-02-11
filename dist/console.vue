@@ -4,7 +4,7 @@
       <div v-for="(item, index) in logs" :key="index" v-html="item" >
       </div>
     </div>
-    <input v-model="cmd" ref="input" placeholder="How can we help?" @keydown="keyhandler" class="console-input" />
+    <input v-model="cmd" ref="input" :placeholder="config.placeholder" @keydown="keyhandler" class="console-input" />
   </div>
 </template>
 
@@ -21,7 +21,12 @@
   export default {
     name: 'v-console',
     props: {
-      settings: {}
+      settings: { type: Object, required: false }
+    },
+    computed: {
+      config () {
+        return this.settings || this.defaultConfig
+      }
     },
     data () {
       return {
@@ -32,22 +37,21 @@
         commands: {},
         isShown: false,
         consolePos: 0,
-        config: {
+        defaultConfig: {
           hotkey: 192, // '~'
           onShow: null,
           onHide: null,
           onEnter: null,
+          onToggle: null,
+          placeholder: 'Command?',
           helpCmd: 'guide',
           defaultHandler: null,
           caseSensitive: false,
           historySize: 256,
-          welcome: `<img src="/statics/gsi-icon.png" />
-                  <span class="console-user-input">GSI Health Console<br>
-                  This console allows power users to access the complete GSIH Platform<br>
-                  before the UI is finished for a feature.
-                  It even works on mobile! Just start typing to get started...<br><br>
-                  </span>
-                  `
+          welcome: `You can replace this welcome message by using &lt;v-console :settings="yourSettings" /><br>
+          Add commands to the console by simply adding a commands: {} to your components!<br/>
+          Check the github repo for structure. Any component can mixin as many commands as you need!<br/>
+          press up or down for history!<br/>`
         }
       }
     },
@@ -57,6 +61,7 @@
     created () {
       this.$console.log = this.log
       this.$console.dispatch = this.dispatch
+      this.$console.toggle = this.toggle
       this.$console.guide = this.guide
       this.hotkeyListener = createHotkeyListener(this, this.config.hotkey)
       window.addEventListener('keydown', this.hotkeyListener)
@@ -64,14 +69,15 @@
     },
     methods: {
       toggle () {
-        if (this.config.onToggle) this.config.onToggle()
+        console.log('toggle command...')
+        if (this.config.onToggle) this.config.onToggle.bind(this)()
         if (this.isShown) {
-          if (this.config.onShow) this.config.onShow()
+          if (this.config.onShow) this.config.onShow.bind(this)()
           this.$refs.input.blur()
           this.isShown = false
         }
         else {
-          if (this.config.onHide) this.config.onHide()
+          if (this.config.onHide) this.config.onHide.bind(this)()
           this.$refs.input.focus()
           this.isShown = true
         }
