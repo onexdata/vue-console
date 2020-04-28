@@ -5,8 +5,10 @@ Apache 2.0 License.
 ## Usage:
 
 ### In your app:
+```
   import console from 'vue-console'
   Vue.use(console)
+```
 
 ### Custom settings
 ```<v-console settings="yourSettingsHere" />```
